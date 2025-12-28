@@ -1,16 +1,17 @@
-create database bai1;
-use bai1;
--- bài 1:
-create table class (
-    class_id varchar(50) primary key,
-    class_name varchar(50) not null,
-    years int not null
+create database exercise01;
+use exercise01;
+
+create table class(
+	class_id int primary key auto_increment,
+    class_name varchar(100) not null,
+    class_year int not null
 );
-create table student (
-    student_id varchar(50) primary key,
-    student_name varchar(50) not null,
-    date_birth date not null,
-    class_id varchar(50) not null,
-    foreign key (class_id)
-	references class (class_id)
+
+create table student(
+	student_id int primary key auto_increment,
+    student_name varchar(100) not null,
+    student_date date not null,
+    class_id int not null,
+    foreign key(class_id) references class(class_id)
 );
+drop table student;
