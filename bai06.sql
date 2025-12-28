@@ -1,76 +1,48 @@
-DROP TABLE IF EXISTS score;
-DROP TABLE IF EXISTS enrollment;
-DROP TABLE IF EXISTS mon_hoc;
-DROP TABLE IF EXISTS sinh_vien;
-DROP TABLE IF EXISTS lop_hoc;
-DROP TABLE IF EXISTS giang_vien;
+create database exercise06;
+use exercise06;
 
-CREATE TABLE giang_vien (
-  ma_giang_vien VARCHAR(20) PRIMARY KEY,
-  ho_ten        VARCHAR(50)  NOT NULL,
-  email         VARCHAR(100) NOT NULL,
-  CONSTRAINT uq_gv_email UNIQUE (email)
-) ENGINE=InnoDB;
+create table class(
+	class_id int primary key auto_increment,
+    class_name varchar(100) not null,
+    class_year int not null
+);
 
-CREATE TABLE lop_hoc (
-  ma_lop    VARCHAR(20) PRIMARY KEY,
-  ten_lop   VARCHAR(50) NOT NULL,
-  khoa      VARCHAR(50) NULL,
-  nien_khoa VARCHAR(20) NULL,
-  CONSTRAINT uq_lop_ten UNIQUE (ten_lop)
-) ENGINE=InnoDB;
+create table student(
+	student_id int primary key auto_increment,
+    student_name varchar(50) not null,
+    class_id int not null,
+    foreign key (class_id) references class(class_id)
+);
 
-CREATE TABLE sinh_vien (
-  ma_sinh_vien VARCHAR(20) PRIMARY KEY,
-  ho_ten       VARCHAR(50)  NOT NULL,
-  email        VARCHAR(100) NULL,
-  ma_lop       VARCHAR(20)  NOT NULL,
-  CONSTRAINT uq_sv_email UNIQUE (email),
-  CONSTRAINT fk_sv_lop
-    FOREIGN KEY (ma_lop) REFERENCES lop_hoc(ma_lop)
-    ON UPDATE CASCADE
-    ON DELETE RESTRICT
-) ENGINE=InnoDB;
+create table teacher (
+	teacher_id int primary key auto_increment,
+    teacher_name varchar(50) not null,
+    teacher_email varchar(50) not null unique
+);
 
-CREATE TABLE mon_hoc (
-  ma_mon_hoc     VARCHAR(20) PRIMARY KEY,
-  ten_mon_hoc    VARCHAR(50) NOT NULL,
-  so_tin_chi     INT NOT NULL,
-  ma_giang_vien  VARCHAR(20) NOT NULL,
-  CONSTRAINT uq_mh_ten UNIQUE (ten_mon_hoc),
-  CONSTRAINT ck_mh_tin_chi CHECK (so_tin_chi > 0),
-  CONSTRAINT fk_mh_gv
-    FOREIGN KEY (ma_giang_vien) REFERENCES giang_vien(ma_giang_vien)
-    ON UPDATE CASCADE
-    ON DELETE RESTRICT
-) ENGINE=InnoDB;
+create table subjects(
+	subject_id int primary key auto_increment,
+    subject_name varchar(50) not null,
+    subject_credit int not null check(subject_credit > 0),
+    teacher_id int not null,
+    foreign key (teacher_id) references teacher(teacher_id)
+);
 
-CREATE TABLE enrollment (
-  ma_sinh_vien VARCHAR(20) NOT NULL,
-  ma_mon_hoc   VARCHAR(20) NOT NULL,
-  ngay_dang_ky DATE NOT NULL,
-  CONSTRAINT pk_enrollment PRIMARY KEY (ma_sinh_vien, ma_mon_hoc),
-  CONSTRAINT fk_enroll_sv
-    FOREIGN KEY (ma_sinh_vien) REFERENCES sinh_vien(ma_sinh_vien)
-    ON UPDATE CASCADE
-    ON DELETE RESTRICT,
-  CONSTRAINT fk_enroll_mh
-    FOREIGN KEY (ma_mon_hoc) REFERENCES mon_hoc(ma_mon_hoc)
-    ON UPDATE CASCADE
-    ON DELETE RESTRICT
-) ENGINE=InnoDB;
+create table enrollment (
+	student_id int not null,
+    subject_id int not null,
+    enrollment_date date not null,
+    primary key (student_id, subject_id),
+    foreign key(student_id) references student(student_id),
+    foreign key(subject_id) references subjects(subject_id)
+);
 
-CREATE TABLE score (
-  ma_sinh_vien   VARCHAR(20) NOT NULL,
-  ma_mon_hoc     VARCHAR(20) NOT NULL,
-  diem_qua_trinh DECIMAL(4,2) NOT NULL,
-  diem_cuoi_ky   DECIMAL(4,2) NOT NULL,
-  CONSTRAINT pk_score PRIMARY KEY (ma_sinh_vien, ma_mon_hoc),
-  CONSTRAINT ck_diem_qua_trinh CHECK (diem_qua_trinh >= 0 AND diem_qua_trinh <= 10),
-  CONSTRAINT ck_diem_cuoi_ky   CHECK (diem_cuoi_ky   >= 0 AND diem_cuoi_ky   <= 10),
-  CONSTRAINT fk_score_enroll
-    FOREIGN KEY (ma_sinh_vien, ma_mon_hoc)
-    REFERENCES enrollment(ma_sinh_vien, ma_mon_hoc)
-    ON UPDATE CASCADE
-    ON DELETE RESTRICT
-) ENGINE=InnoDB;
+create table score (
+	student_id int not null,
+    subject_id int not null,
+    progress_score decimal(4,2) not null check(progress_score between 0 and 10),
+    final_score decimal(4,2) not null check(final_score between 0 and 10),
+    primary key (student_id, subject_id),
+    foreign key (student_id) references student(student_id),
+    foreign key (subject_id) references subjects(subject_id)
+)
