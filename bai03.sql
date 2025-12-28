@@ -1,33 +1,22 @@
-drop table if exists sinh_vien;
-drop table if exists mon_hoc;
-drop table if exists enrollment;
+create database exercise03;
+use exercise03;
 
-create table sinh_vien(
-	ma_sinh_vien varchar(20) primary key,
-    ho_ten varchar(20) not null
-)ENGINE = InnoDB;
+create table student (
+	student_id int primary key auto_increment,
+    student_name varchar(50) not null
+);
 
-create table mon_hoc(
-	ma_mon_hoc varchar(20) primary key,
-    ten_mon_hoc varchar(20) not null,
-    so_tin_chi int not null check(so_tin_chi >0)
-)ENGINE=InnoDB;
+create table subjects(
+	subject_id int primary key auto_increment,
+    subject_name varchar(50) not null,
+    subject_credit int not null check(subject_credit > 0)
+);
 
-create table enrollment(
-	ma_sinh_vien varchar(20) not null,
-    ma_mon_hoc varchar(20) not null,
-    ngay_dang_ky date not null,
-	constraint pk_enrollment primary key(ma_sinh_vien, ma_mon_hoc),
-    
-    constraint fk_enroll_sv 
-    foreign key (ma_sinh_vien) references sinh_vien(ma_sinh_vien)
-    on update cascade
-    on delete restrict
-    ,
-    
-    constraint fk_enroll_mh
-    foreign key (ma_mon_hoc) references mon_hoc(ma_mon_hoc)
-    on update cascade
-    on delete restrict
-    
-)ENGINE=InnoDB;
+create table enrollment (
+	student_id int not null,
+    subject_id int not null,
+    enrollment_date date not null,
+    primary key (student_id, subject_id),
+    foreign key(student_id) references student(student_id),
+    foreign key(subject_id) references subjects(subject_id)
+)
