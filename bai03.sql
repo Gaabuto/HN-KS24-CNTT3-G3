@@ -1,22 +1,25 @@
 create database exercise03;
 use exercise03;
 
-create table student (
-	student_id int primary key auto_increment,
-    student_name varchar(50) not null
+CREATE TABLE Student (
+    student_id VARCHAR(10) PRIMARY KEY,
+    full_name VARCHAR(100) NOT NULL
 );
 
-create table subjects(
-	subject_id int primary key auto_increment,
-    subject_name varchar(50) not null,
-    subject_credit int not null check(subject_credit > 0)
+CREATE TABLE Subject (
+    subject_id VARCHAR(10) PRIMARY KEY,
+    subject_name VARCHAR(100) NOT NULL,
+    credit INT CHECK (credit > 0)
 );
 
-create table enrollment (
-	student_id int not null,
-    subject_id int not null,
-    enrollment_date date not null,
-    primary key (student_id, subject_id),
-    foreign key(student_id) references student(student_id),
-    foreign key(subject_id) references subjects(subject_id)
-)
+CREATE TABLE Enrollment (
+    student_id VARCHAR(10),
+    subject_id VARCHAR(10),
+    enroll_date DATE NOT NULL,
+
+    PRIMARY KEY (student_id, subject_id),
+	FOREIGN KEY (student_id)
+	REFERENCES Student(student_id),
+	FOREIGN KEY (subject_id)
+	REFERENCES Subject(subject_id)
+);
