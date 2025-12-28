@@ -1,17 +1,17 @@
 create database exercise01;
 use exercise01;
 
-create table class(
-	class_id int primary key auto_increment,
-    class_name varchar(100) not null,
-    class_year int not null
+CREATE TABLE Class (
+    class_id VARCHAR(10) PRIMARY KEY,
+    class_name VARCHAR(50) NOT NULL,
+    school_year INT NOT NULL
 );
-
-create table student(
-	student_id int primary key auto_increment,
-    student_name varchar(100) not null,
-    student_date date not null,
-    class_id int not null,
-    foreign key(class_id) references class(class_id)
+CREATE TABLE Student (
+    student_id VARCHAR(10) PRIMARY KEY,
+    full_name VARCHAR(100) NOT NULL,
+    birth_date DATE,
+    class_id VARCHAR(10),
+	FOREIGN KEY (class_id)
+	REFERENCES Class(class_id)
 );
 drop table student;
