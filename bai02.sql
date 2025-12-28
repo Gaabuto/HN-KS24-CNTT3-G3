@@ -1,13 +1,13 @@
-drop table if exists sinh_vien;
-drop table if exists mon_hoc;
+create database exercise02;
+use exercise02;
 
-create table sinh_vien(
-	ma_sinh_vien varchar(20) primary key,
-    ho_ten varchar(20) not null
-)ENGINE = InnoDB;
+create table student(
+	student_id int primary key auto_increment,
+    student_name varchar(50) not null
+);
 
-create table mon_hoc(
-	ma_mon_hoc varchar(20) primary key,
-    ten_mon_hoc varchar(20) not null,
-    so_tin_chi int not null check(so_tin_chi >0)
-)ENGINE=InnoDB;
+create table subjects(
+	subject_id int primary key auto_increment,
+    subject_name varchar(50) not null,
+    subject_credit int not null check(subject_credit > 0)
+)
