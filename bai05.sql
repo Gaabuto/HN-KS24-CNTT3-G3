@@ -1,65 +1,22 @@
-DROP TABLE IF EXISTS enrollment;
-DROP TABLE IF EXISTS score;
-DROP TABLE IF EXISTS mon_hoc;
-DROP TABLE IF EXISTS sinh_vien;
-DROP TABLE IF EXISTS giang_vien;
+create database exercise05;
+use exercise05;
 
+create table student (
+	student_id int primary key auto_increment,
+    student_name varchar(50) not null
+);
 
-CREATE TABLE giang_vien(
-  ma_giang_vien VARCHAR(20) PRIMARY KEY,
-  ho_ten VARCHAR(50) NOT NULL,
-  email VARCHAR(100) NOT NULL
-) ENGINE=InnoDB;
+create table subjects(
+	subject_id int primary key auto_increment,
+    subject_name varchar(50) not null
+);
 
-CREATE TABLE sinh_vien(
-  ma_sinh_vien VARCHAR(20) PRIMARY KEY,
-  ho_ten VARCHAR(50) NOT NULL
-) ENGINE=InnoDB;
-
-CREATE TABLE mon_hoc(
-  ma_mon_hoc VARCHAR(20) PRIMARY KEY,
-  ten_mon_hoc VARCHAR(50) NOT NULL,
-  so_tin_chi INT NOT NULL CHECK (so_tin_chi > 0),
-  ma_giang_vien VARCHAR(20) NOT NULL,
-  CONSTRAINT fk_mh_gv
-    FOREIGN KEY (ma_giang_vien) REFERENCES giang_vien(ma_giang_vien)
-    ON UPDATE CASCADE
-    ON DELETE RESTRICT
-) ENGINE=InnoDB;
-
-CREATE TABLE enrollment(
-  ma_sinh_vien VARCHAR(20) NOT NULL,
-  ma_mon_hoc VARCHAR(20) NOT NULL,
-  ngay_dang_ky DATE NOT NULL,
-  CONSTRAINT pk_enrollment PRIMARY KEY(ma_sinh_vien, ma_mon_hoc),
-  CONSTRAINT fk_enroll_sv
-    FOREIGN KEY (ma_sinh_vien) REFERENCES sinh_vien(ma_sinh_vien)
-    ON UPDATE CASCADE
-    ON DELETE RESTRICT,
-  CONSTRAINT fk_enroll_mh
-    FOREIGN KEY (ma_mon_hoc) REFERENCES mon_hoc(ma_mon_hoc)
-    ON UPDATE CASCADE
-    ON DELETE RESTRICT
-) ENGINE=InnoDB;
-
-CREATE TABLE score (
-  ma_sinh_vien   VARCHAR(20) NOT NULL,
-  ma_mon_hoc     VARCHAR(20) NOT NULL,
-  diem_qua_trinh DECIMAL(4,2) NOT NULL,
-  diem_cuoi_ky   DECIMAL(4,2) NOT NULL,
-
-  CONSTRAINT pk_score PRIMARY KEY (ma_sinh_vien, ma_mon_hoc),
-
-  CONSTRAINT fk_score_sv
-    FOREIGN KEY (ma_sinh_vien) REFERENCES sinh_vien(ma_sinh_vien)
-    ON UPDATE CASCADE
-    ON DELETE RESTRICT,
-
-  CONSTRAINT fk_score_mh
-    FOREIGN KEY (ma_mon_hoc) REFERENCES mon_hoc(ma_mon_hoc)
-    ON UPDATE CASCADE
-    ON DELETE RESTRICT,
-
-  CONSTRAINT ck_diem_qua_trinh CHECK (diem_qua_trinh >= 0 AND diem_qua_trinh <= 10),
-  CONSTRAINT ck_diem_cuoi_ky   CHECK (diem_cuoi_ky   >= 0 AND diem_cuoi_ky   <= 10)
-) ENGINE=InnoDB;
+create table score (
+	student_id int not null,
+    subject_id int not null,
+    progress_score decimal(4,2) not null check(progress_score between 0 and 10),
+    final_score decimal(4,2) not null check(final_score between 0 and 10),
+    primary key (student_id, subject_id),
+    foreign key (student_id) references student(student_id),
+    foreign key (subject_id) references subjects(subject_id)
+)
