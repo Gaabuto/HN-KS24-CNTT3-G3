@@ -1,3 +1,6 @@
+-- create database ss2;
+-- use ss2;
+
 -- create table class (
 -- class_id varchar(50) primary key,
 -- class_name varchar(50) not null,
