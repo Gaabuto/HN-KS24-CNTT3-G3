@@ -9,7 +9,7 @@ create table Student(
 );
 insert into Student (student_id,full_name,date_of_birth,email)
 value 
-	('1','Nguyễn Mạnh Thắng','2006-04-24','thang@gmail.com'),
+	('1','Nguyễn Trường An','2001-01-01','an@gmail.com'),
 	('2','Nguyễn Văn A','2006-03-12','a@gmail.com'),
     ('3','Trần Thị B','2006-09-03','b@gmail.com');
     
