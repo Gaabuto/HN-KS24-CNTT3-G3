@@ -1,3 +1,5 @@
+create database ss03_b2;
+use ss03_b2;
 -- Tạo bảng Student
 CREATE TABLE Student (
     student_id INT PRIMARY KEY,
