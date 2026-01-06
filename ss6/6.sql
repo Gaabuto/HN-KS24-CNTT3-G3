@@ -536,12 +536,7 @@ INSERT INTO order_items VALUES
 (14, 108, 4, 2, 500000);
 
 
-dapan.sql
-Trang
-1
-/
-1
-100%
+
 /* =========================================================
    FILE SQL: ecommerce_answers.sql
    MÔN HỌC : CƠ SỞ DỮ LIỆU / SQL
