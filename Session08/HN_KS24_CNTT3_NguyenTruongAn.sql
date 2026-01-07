@@ -75,7 +75,7 @@ SELECT *
 FROM bookings
 WHERE YEAR(check_in) = 2024;
 -- 6. Cho biết số lượng phòng của từng loại phòng
-SELECT room_type, COUNT(*) AS so_phong
+SELECT room_type, COUNT(*) AS 'so_phong'
 FROM rooms
 GROUP BY room_type;
 -- PHẦN II – TRUY VẤN NÂNG CAO
@@ -106,9 +106,6 @@ FROM guests g JOIN bookings b ON g.guest_id = b.guest_id
 GROUP BY g.guest_id, g.guest_name
 HAVING COUNT(b.booking_id) >= 2;
 -- 12. Tìm loại phòng có số lượt đặt phòng nhiều nhất
-
-
-
 -- PHẦN III – TRUY VẤN LỒNG
 -- 13. Hiển thị những phòng có giá thuê cao hơn giá trung bình
 SELECT *
@@ -125,4 +122,3 @@ WHERE guest_id NOT IN (
     FROM bookings
 );
 -- 15. Tìm phòng được đặt nhiều lần nhất
-
