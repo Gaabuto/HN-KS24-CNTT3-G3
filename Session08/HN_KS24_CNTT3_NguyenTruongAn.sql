@@ -106,6 +106,13 @@ FROM guests g JOIN bookings b ON g.guest_id = b.guest_id
 GROUP BY g.guest_id, g.guest_name
 HAVING COUNT(b.booking_id) >= 2;
 -- 12. Tìm loại phòng có số lượt đặt phòng nhiều nhất
+SELECT r.room_type,
+       COUNT(*) AS total_bookings
+	FROM bookings b
+	JOIN rooms r ON b.room_id = r.room_id
+	GROUP BY r.room_type
+	ORDER BY total_bookings DESC
+	LIMIT 1;
 -- PHẦN III – TRUY VẤN LỒNG
 -- 13. Hiển thị những phòng có giá thuê cao hơn giá trung bình
 SELECT *
