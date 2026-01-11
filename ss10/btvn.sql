@@ -316,3 +316,17 @@ left join comments c on c.post_id = p.post_id group by p.post_id, u.username, p.
 select * from view_popular_posts order by post_id;
 select post_id, username, content, like_count, comment_count, (like_count + comment_count) as total_interactions from view_popular_posts
 where (like_count + comment_count) > 10 order by total_interactions desc, post_id asc;
+
+create index idx_user_gender on users(gender); -- 2
+create or replace view view_user_activity -- 3
+as
+select u.user_id, count(p.post_id) as total_posts, count(c.comment_id) as total_comments
+from users as u join posts as p on u.user_id = p.user_id
+					join comments as c on u.user_id = c.user_id
+group by u.user_id;
+SELECT * FROM social_network_pro.view_user_activity; -- 4
+select v.user_id, u.full_name, total_posts, total_comments -- 5
+from view_user_activity as v join users as u on v.user_id = u.user_id
+where total_posts > 5 and total_comments > 20
+order by total_comments desc
+limit 5;
