@@ -798,7 +798,7 @@ drop procedure CreatePostWithValidation;
 -- bai 5
 
 delimiter //
-create procedure CalculateUserActivityScore (id_in int, OUT activity_score int, out activity_level VARCHAR(50) )
+create procedure CalculateUserActivityScore (id_in int, OUT activity_score int, out activity_level varchar(50) )
 begin
 select count(post_id) into count_posts
 from post_id
