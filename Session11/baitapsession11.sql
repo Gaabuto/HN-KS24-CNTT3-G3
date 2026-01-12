@@ -720,153 +720,214 @@ FROM messages m
 JOIN users u ON m.sender_id = u.user_id;
 SELECT COUNT(*) AS total_notifications FROM notifications;
 
--- Câu 1:
--- Tạo stored procedure có tham số IN nhận vào p_user_id
-	delimiter $$
-		create procedure truyVan (IN p_user_id int)
-        begin 
-			select post_id,content,created_at 
-            from posts 
-            where user_id =p_user_id;
-			end $$
-
-call truyVan(1);
-
-drop procedure truyVan;
-
--- Câu 2:
-delimiter $$
-	create procedure CalculatePostLikes(IN p_post_id int ,OUT total_likes int)
-   begin
-		select count(*)
-        into total_likes
-        from likes
-        where post_id=p_post_id;
-	end $$
-    
-    call CalculatePostLikes(101,@total);
-    select @total;
--- Câu 3:
-
--- Câu 3:
-delimiter $$
-	create procedure CalculateBonusPoints (iN p_user_id INT,INOUT p_bonus_points INT )
-begin
-	declare total_post int;
-	select count(*)
-    into total_post
-    from posts
-    where p_user_id=user_id;
-	if total_post >= 20 then 
-		set p_bonus_points =p_bonus_points+100;
-	elseif total_post >= 10 then
-		set p_bonus_points = p_bonus_points+50;
-        end if;
-    end $$
-    
-    set @bonus =100;
-    call CalculateBonusPoints(1,@bonus);
-    select @bonus;
-    
--- Bài 4:
-delimiter $$
-	create procedure CreatePostWithValidation (IN p_user_id INT,IN p_content TEXT,OUT result_message varchar(255))
-    begin 
-		if length(p_content) <5 then 
-			set result_message = 'Nội dung quá ngắn';
-		else 
-			insert into posts(user_id,content,created_at)
-            values (p_user_id,p_content,current_timestamp());
-            end if;
-        end$$
-
-call CreatePostWithValidation(1,'Kiểm tra các kết quả',@rs);
-select @rs;
-
--- Bài 5:
+-- b1
 DELIMITER $$
 
+CREATE PROCEDURE sp_get_posts_by_user (
+    IN p_user_id INT
+)
+BEGIN
+    SELECT 
+        post_id,
+        content,
+        created_at
+    FROM posts
+    WHERE user_id = p_user_id
+    ORDER BY created_at DESC;
+END$$
+
+DELIMITER ;
+
+CALL sp_get_posts_by_user(1);
+
+DROP PROCEDURE IF EXISTS sp_get_posts_by_user;
+
+-- b2
+
+DELIMITER $$
+CREATE PROCEDURE CalculatePostLikes (
+    IN p_post_id INT,
+    OUT total_likes INT
+)
+BEGIN
+    SELECT COUNT(*) INTO total_likes
+    FROM likes
+    WHERE post_id = p_post_id;
+END$$
+DELIMITER ;
+
+SET @total_likes = 0;
+CALL CalculatePostLikes(101, @total_likes);
+SELECT @total_likes;
+
+DROP PROCEDURE IF EXISTS CalculatePostLikes;
+
+-- b3
+
+DELIMITER $$
+CREATE PROCEDURE CalculateBonusPoints (
+    IN p_user_id INT,
+    INOUT p_bonus_points INT
+)
+BEGIN
+    DECLARE post_count INT;
+
+    SELECT COUNT(*) INTO post_count
+    FROM posts
+    WHERE user_id = p_user_id;
+
+    IF post_count >= 20 THEN
+        SET p_bonus_points = p_bonus_points + 100;
+    ELSEIF post_count >= 10 THEN
+        SET p_bonus_points = p_bonus_points + 50;
+    END IF;
+END$$
+DELIMITER ;
+
+SET @bonus_points = 100;
+CALL CalculateBonusPoints(1, @bonus_points);
+SELECT @bonus_points;
+
+DROP PROCEDURE IF EXISTS CalculateBonusPoints;
+
+-- b4
+DELIMITER $$
+CREATE PROCEDURE CreatePostWithValidation (
+    IN p_user_id INT,
+    IN p_content TEXT,
+    OUT result_message VARCHAR(255)
+)
+BEGIN
+    IF CHAR_LENGTH(p_content) < 5 THEN
+        SET result_message = 'Nội dung quá ngắn';
+    ELSE
+        INSERT INTO posts (user_id, content, created_at)
+        VALUES (p_user_id, p_content, NOW());
+        SET result_message = 'Thêm bài viết thành công';
+    END IF;
+END$$
+DELIMITER ;
+
+SET @msg = '';
+CALL CreatePostWithValidation(1, 'Hi', @msg);
+SELECT @msg;
+
+CALL CreatePostWithValidation(1, 'Học MySQL Stored Procedure rất thú vị', @msg);
+SELECT @msg;
+
+DROP PROCEDURE IF EXISTS CreatePostWithValidation;
+
+-- b5
+
+DELIMITER $$
 CREATE PROCEDURE CalculateUserActivityScore (
     IN p_user_id INT,
     OUT activity_score INT,
     OUT activity_level VARCHAR(50)
 )
 BEGIN
-    DECLARE total_posts INT DEFAULT 0;
-    DECLARE total_comments INT DEFAULT 0;
-    DECLARE total_likes INT DEFAULT 0;
+    DECLARE post_count INT;
+    DECLARE comment_count INT;
+    DECLARE like_count INT;
 
-    -- Đếm số post
-    SELECT COUNT(*) 
-    INTO total_posts
-    FROM posts
-    WHERE user_id = p_user_id;
-
-    -- Đếm số comment
-    SELECT COUNT(*)
-    INTO total_comments
-    FROM comments
-    WHERE user_id = p_user_id;
-
-    -- Đếm số like nhận được trên các bài viết của user
-    SELECT COUNT(*)
-    INTO total_likes
-    FROM likes l
-    JOIN posts p ON l.post_id = p.post_id
+    SELECT COUNT(*) INTO post_count FROM posts WHERE user_id = p_user_id;
+    SELECT COUNT(*) INTO comment_count FROM comments WHERE user_id = p_user_id;
+    SELECT COUNT(*) INTO like_count
+    FROM likes l JOIN posts p ON l.post_id = p.post_id
     WHERE p.user_id = p_user_id;
 
-    -- Tính tổng điểm
-    SET activity_score = total_posts * 10 
-                        + total_comments * 5 
-                        + total_likes * 3;
+    SET activity_score = post_count*10 + comment_count*5 + like_count*3;
 
-    -- Phân loại mức độ hoạt động
     CASE
-        WHEN activity_score > 500 THEN 
-            SET activity_level = 'Rất tích cực';
-        WHEN activity_score >= 200 THEN 
-            SET activity_level = 'Tích cực';
-        ELSE 
-            SET activity_level = 'Bình thường';
+        WHEN activity_score > 500 THEN SET activity_level = 'Rất tích cực';
+        WHEN activity_score >= 200 THEN SET activity_level = 'Tích cực';
+        ELSE SET activity_level = 'Bình thường';
     END CASE;
+END$$
+DELIMITER ;
 
+SET @score = 0; SET @level = '';
+CALL CalculateUserActivityScore(1, @score, @level);
+SELECT @score, @level;
+
+DROP PROCEDURE IF EXISTS CalculateUserActivityScore;
+
+-- b6
+
+DELIMITER $$
+
+CREATE PROCEDURE NotifyFriendsOnNewPost (
+    IN p_user_id INT,
+    IN p_content TEXT
+)
+BEGIN
+    DECLARE done INT DEFAULT 0;
+    DECLARE v_friend_id INT;
+    DECLARE v_full_name VARCHAR(100);
+    DECLARE v_post_id INT;
+
+    -- Cursor lấy danh sách bạn bè accepted (2 chiều)
+    DECLARE friend_cursor CURSOR FOR
+        SELECT friend_id FROM friends
+        WHERE user_id = p_user_id AND status = 'accepted'
+        UNION
+        SELECT user_id FROM friends
+        WHERE friend_id = p_user_id AND status = 'accepted';
+
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+    -- Lấy tên người đăng
+    SELECT full_name
+    INTO v_full_name
+    FROM users
+    WHERE user_id = p_user_id;
+
+    -- Thêm bài viết mới
+    INSERT INTO posts (user_id, content, created_at)
+    VALUES (p_user_id, p_content, NOW());
+
+    SET v_post_id = LAST_INSERT_ID();
+
+    -- Mở cursor
+    OPEN friend_cursor;
+
+    read_loop: LOOP
+        FETCH friend_cursor INTO v_friend_id;
+        IF done = 1 THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- Không gửi cho chính mình
+        IF v_friend_id <> p_user_id THEN
+            INSERT INTO notifications (user_id, type, content, is_read, created_at)
+            VALUES ( v_friend_id, 'new_post', CONCAT(v_full_name, ' đã đăng một bài viết mới'), 0, NOW()
+            );
+        END IF;
+    END LOOP;
+
+    CLOSE friend_cursor;
+
+    -- Trả về post_id để dễ kiểm tra
+    SELECT v_post_id AS new_post_id;
 END$$
 
-CALL CalculateUserActivityScore(1, @score, @level);
-SELECT @score AS activity_score, @level AS activity_level;
+DELIMITER ;
 
--- Câu 6:
-delimiter $$
-drop procedure if exists CalculateUserActivityScore$$
-create procedure CalculateUserActivityScore(in p_user_id int, out activity_score int, out activity_level varchar(50))
-begin
-    declare posts_count int default 0;
-    declare comments_count int default 0;
-    declare likes_count int default 0;
+CALL NotifyFriendsOnNewPost(1,'Hôm nay mình vừa học xong Cursor trong MySQL');
 
-    select count(*) into posts_count from posts
-    where user_id = p_user_id;
+SELECT 
+    n.notification_id,
+    n.user_id,
+    u.full_name,
+    n.type,
+    n.content,
+    n.created_at
+FROM notifications n
+JOIN users u ON n.user_id = u.user_id
+WHERE n.type = 'new_post'
+ORDER BY n.created_at DESC
+LIMIT 20;
 
-    select count(*) into comments_count from comments
-    where user_id = p_user_id;
-
-    select count(*) into likes_count from likes l
-    join posts p on p.post_id = l.post_id
-    where p.user_id = p_user_id;
-
-    set activity_score = posts_count * 10 + comments_count * 5 + likes_count * 3;
-    set activity_level = case
-        when activity_score >= 500 then "Rất tích cực"
-        when activity_score between 200 and 500 then "Tích cực"
-        else "Bình thường"
-    end;
-end$$
-delimiter ;
-
-set @score = 0;
-set @level = '';
-call CalculateUserActivityScore(7, @score, @level);
-select @score as activity_score, @level as activity_level;
-
+DROP PROCEDURE IF EXISTS NotifyFriendsOnNewPost;
 
 
