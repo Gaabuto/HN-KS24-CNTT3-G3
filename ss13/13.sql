@@ -119,6 +119,8 @@ from users u;
 
 INSERT INTO likes (user_id, post_id, liked_at) VALUES (2, 4, NOW());
 
+delete from likes where like_id = 1;
+
 SELECT * FROM posts WHERE post_id = 4;
 
 SELECT * FROM user_statistics;
@@ -175,6 +177,32 @@ end//
 
 delimiter ;
 
+insert into likes (user_id, post_id, liked_at)
+values (1, 1, now());
+
+insert into likes (user_id, post_id, liked_at)
+values (2, 1, now());
+
+select post_id, like_count
+from posts
+where post_id = 1;
+
+update likes
+set post_id = 3
+where user_id = 2 and post_id = 1;
+
+select post_id, like_count
+from posts
+where post_id in (1, 3);
+
+delete from likes
+where user_id = 2 and post_id = 3;
+
+select post_id, like_count
+from posts
+where post_id = 3;
+
+
 -- bai 4
 
 create table post_history (
@@ -212,6 +240,27 @@ insert into post_history (post_id, old_content, changed_at, changed_by_user_id
 end //
 delimiter ;
 
+update posts
+set content = 'hello world from alice (edited)'
+where post_id = 1;
+
+update posts
+set content = 'bob first post (updated content)'
+where post_id = 3;
+
+select post_id, like_count
+from posts
+where post_id = 1;
+
+update posts
+set content = 'hello world from alice (edited again)'
+where post_id = 1;
+
+select post_id, like_count
+from posts
+where post_id = 1;
+
+
 -- bai 5
 
 delimiter //
@@ -234,6 +283,10 @@ new.email not like '%@%' or new.email not like '%.%' then
 end if;
 end //
 delimiter ;
+
+call addUser('david', 'david@gmail.com', '2025-01-05');
+
+select * from users where username = 'david';
 
 -- bai 6
 create table friendships (
@@ -294,3 +347,25 @@ begin
     end if;
 end //
 delimiter ;
+
+create view user_profile as
+select
+    u.user_id,
+    u.username,
+    u.email,
+    u.created_at,
+    u.post_count,
+    u.follower_count,
+    (
+        select count(*)
+        from friendships f
+        where f.follower_id = u.user_id
+          and f.status = 'accepted'
+    ) as following_count
+from users u;
+
+insert into friendships (follower_id, followee_id, status)
+values (1, 2, 'accepted');
+
+insert into friendships (follower_id, followee_id, status)
+values (3, 2, 'accepted');
